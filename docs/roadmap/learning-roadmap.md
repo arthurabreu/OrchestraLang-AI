@@ -1,4 +1,4 @@
-# OrchestraLang AI — plano de estudo e desenvolvimento
+5555# OrchestraLang AI — plano de estudo e desenvolvimento
 
 Plano para aprender LangChain 1.x **construindo** OrchestraLang AI (agentes úteis), sem repetir os monólitos vibe-coded (`orchestra-ai-agno`, `fsociety`, `Orchestra-AI`, `apps-with-langchain`).
 
@@ -9,14 +9,15 @@ Stack alvo: Python 3.11+, LangChain ≥1.0 (hoje ~1.3), `create_agent`, **Ollama
 
 ## Princípios (anti-monstro)
 
-1. **Um agente = um job.** Nada de “Orchestra” genérica no dia 1.
-2. **Tool first.** O valor está nas tools (ADB, arquivos, APIs), não no prompt.
-3. **Spec antes de código.** Prompt solto → spec curta (objetivo, inputs, tools, critérios de “pronto”) → só então implementar.
-4. **Vertical slice.** Cada fase entrega algo que você roda no terminal e usa de verdade.
-5. **Herdar depois.** “Agente master + RAG por agente” só depois de 2–3 agentes úteis sozinhos.
-6. **Não portar código morto** dos repos antigos. Ideias sim; arquitetura e código, não.
-7. **Local por padrão.** Ollama; API paga (**Grok / xAI**) só quando o modelo local falhar no job (tool calling fraco, etc.). OpenRouter `:free` = comparação barata antes de pagar.
-8. **Aprender construindo.** Foco em OrchestraLang AI — Python “mínimo” só o que a próxima tool exigir.
+1. **Simples primeiro.** Near term: escolher um modelo (Ollama keeper / depois OpenRouter free / Grok) e **só conversar** — LangChain chat, messages, streaming, trocar provider. Sem feature louca até o loop de chat estar confortável.
+2. **Um agente = um job.** Nada de “Orchestra” genérica no dia 1.
+3. **Tool first (depois do chat).** Valor dos agentes está nas tools (ADB, arquivos, APIs). O chat mínimo não tem tools. O primeiro job com tool é a Fase 1, quando pedida.
+4. **Spec antes de código.** Prompt solto → spec curta (objetivo, inputs, tools, critérios de “pronto”) → só então implementar.
+5. **Vertical slice.** Cada fase entrega algo que você roda no terminal e usa de verdade.
+6. **Herdar depois.** “Agente master + RAG por agente” só depois de 2–3 agentes úteis sozinhos.
+7. **Não portar código morto** dos repos antigos. Ideias sim; arquitetura e código, não.
+8. **Local por padrão.** Ollama; API paga (**Grok / xAI**) só quando o modelo local falhar no job (tool calling fraco, etc.). OpenRouter `:free` = comparação barata antes de pagar.
+9. **Aprender construindo.** Foco em OrchestraLang AI — Python “mínimo” só o que a próxima fatia exigir.
 
 ---
 
@@ -24,13 +25,14 @@ Stack alvo: Python 3.11+, LangChain ≥1.0 (hoje ~1.3), `create_agent`, **Ollama
 
 Marque com `[x]` quando a fatia estiver fechada (código + teste manual + MD de estudo, quando a fase exigir). Itens grosseiros — uma linha por fase.
 
-- [x] **Scaffold precoce** — pacote `src/orchestralang/` (`config`, `models`, `llm`, CLI `ping` / `models-openrouter`); sem `create_agent`
+- [x] **Scaffold precoce** — pacote `src/orchestralang/` (`config`, `models`, `llm`, CLI `ping` / `models-openrouter`)
 - [x] **Convenções de estudo** — espelho `docs/src/` ↔ `src/`; sync trio `CLAUDE.md` / `AGENTS.md` / `.cursor/rules/orchestralang.mdc`
 - [x] **Etapa Ollama** — inventário → `pull` keepers → smoke `ollama run` → `rm` só extras quebrados (nunca keepers)
-- [ ] **Fase 0 — Hello agent** — `create_agent` + 1 tool (`get_time`/`echo`); `orchestralang run hello …`
-  - [ ] código + pytest (tool sem LLM)
-  - [ ] teste manual documentado
-  - [ ] MD em `docs/estudo/`
+- [x] **Fase Chat** — `uv run orchestralang`: 1 Ollama / 2 xAI / 3 OpenRouter, multi-turn, `/back` `/exit`. Sem key falha claro. Streaming ainda não. **`ping` one-shot ≠ chat.**
+- [x] **Fase 0 — Hello agent** — removido. O chat mínimo cobre o uso. `create_agent` volta num job real (ADB), não num `get_time` de brinquedo.
+  - [x] código + pytest (tool sem LLM)
+  - [x] teste manual documentado
+  - [x] MD em `docs/estudo/`
 - [ ] **Fase 1 — Agente ADB Android** — tools allowlist + dry-run `--plan`
 - [ ] **Fase 2 — Inbox de ideias**
 - [ ] **Fase 3 — Vertical de vida** (rotinas / nutrição / lugares — uma só)
@@ -41,7 +43,7 @@ Marque com `[x]` quando a fatia estiver fechada (código + teste manual + MD de 
 - [ ] **Fase 8 — App cliente**
 - [ ] **Fase séria** — Ambev / Mercantil / agents de trabalho (**só no fim**)
 
-Estudo por arquivo do código atual: [`docs/src/`](../src/README.md).
+Estudo por arquivo do código atual: [`docs/src/`](../src/README.md). Como rodar hoje: [`README.md`](../../README.md) § **Como rodar / testar**.
 
 ---
 
@@ -61,15 +63,20 @@ Estudo por arquivo do código atual: [`docs/src/`](../src/README.md).
 
 ## Trilha de aprendizado (intercalada com builds)
 
-Foco: construir OrchestraLang. Sem bloco de “Python mínimo” separado.
+Foco: construir OrchestraLang. Sem bloco de “Python mínimo” separado. **Ordem near-term: Chat (feito) → ADB quando Tao pedir.**
 
-### LangChain 1.x core (junto com Agente 0 e 1)
-- chat com Ollama sem agent
-- um `@tool` e `create_agent`
+### LangChain 1.x core — Fase Chat (feita; streaming ainda não)
+- messages + histórico multi-turn (sem agent)
+- escolher / trocar modelo (Ollama keeper ↔ OpenRouter free ↔ Grok/xAI)
+- streaming opcional (depois do loop básico)
+- CLI: prompt loop + quit
+
+### Tools / agent loop — quando houver um job (Fase 1 / ADB)
+- um `@tool` e `create_agent` no primeiro agente útil
 - inspecionar `tool_calls` e mensagens
-- trocar modelo (Ollama ↔ OpenRouter free ↔ Grok/xAI) via config
+- o hello (`get_time`) foi removido; o chat não usa tools
 
-### Harness (depois de Agente 1 estável)
+### Harness (depois de Agente 1 / ADB estável)
 - system prompt curto e testável
 - limites: allowlist de packages/paths/comandos ADB
 - logs estruturados de cada tool call
@@ -109,7 +116,7 @@ Cada agente: `spec.md` + pasta própria + tools dedicadas. Sem framework de “h
 
 ## Etapa precoce — atualizar / verificar Ollama + escolher modelos
 
-**Antes (ou logo ao lado) da Fase 0.** Política: **UPDATE + VERIFY** (não limpar slate / wipe-by-default).
+**Feita (keepers no disco).** Base pra Fase Chat e demais. Política: **UPDATE + VERIFY** (não limpar slate / wipe-by-default).
 
 Objetivo: inventário → **atualizar** LLMs locais com `ollama pull` → **garantir que carregam** (`ollama run` / smoke) → `ollama rm` **só** extras que falharem o load (nunca keepers) → planejar pulls novos só se faltar tool calling.  
 **Nesta tarefa de planejamento: NÃO executar `ollama rm` / pulls.** Só documentar. Tao / sessão futura roda os comandos.
@@ -231,12 +238,22 @@ Origem da lista: `orchestra-ai-agno/.../openrouter.py`. Detalhe: [internal/telec
 
 ## Roadmap de agentes (prioridade — fases de aprendizado)
 
-### Fase 0 — Hello agent (1 sessão)
-**Objetivo:** Ollama + `create_agent` + 1 tool inútil (`get_time` ou `echo`).  
-**Aprende:** setup, invoke, ver tool call.  
-**Pronto quando:** `uv run orchestralang run hello "que horas são?"` funciona.
+Ordem near-term: **Fase Chat (feita) → Fase 1 (ADB) quando Tao pedir.**
 
-### Fase 1 — Agente ADB Android (primeiro útil) ← começar aqui
+### Fase Chat — conversa multi-turn (feita)
+**Objetivo:** CLI interativo pra **selecionar um modelo e conversar** — daily driver.  
+**No ar:** `src/orchestralang/chat.py`, entrada `uv run orchestralang`.
+- 1 Ollama (lista ao vivo) · 2 xAI (`XAI_MODELS`, exige key) · 3 OpenRouter free (catálogo, exige key)
+- Loop: linha → `llm.invoke` com histórico → imprime → repete. `/back` troca provedor, `/exit` sai
+- Fora: tools neste loop, streaming, UI, histórico em disco
+
+**Aprende:** `BaseChatModel`, `HumanMessage`/`AIMessage`, histórico, trocar provider sem reescrever o loop. Notas: `docs/src/orchestralang/chat.md`.  
+**Nota:** `ping` = smoke one-shot. Hello = tools, outro comando.
+
+### Fase 0 — Hello agent (removido)
+O `get_time` + `run hello` saiu. O chat mínimo é o app. O primeiro `create_agent` fica para um job de verdade.
+
+### Fase 1 — Agente ADB Android (primeiro útil — quando Tao pedir)
 **Objetivo:** bot que inspeciona e age em apps Android via `adb` (skill + tool clara).  
 **Spec mínima:**
 - Inputs: pedido em linguagem natural (“abre Settings e me diga o Wi‑Fi”)
@@ -302,7 +319,7 @@ Só quando houver ≥2 agentes estáveis e uma API/CLI clara. Não começar pelo
 
 ## Fase séria / trabalho (TARDE — depois de tudo bem testado)
 
-**Não agora.** Só depois de hello + ADB + pelo menos mais 1 agente útil + harness + (ideal) telecinese/RAG básicos estáveis.
+**Não agora.** Só depois de Chat + ADB + pelo menos mais 1 agente útil + harness + (ideal) telecinese/RAG básicos estáveis.
 
 | Ideia | Nota |
 | --- | --- |
@@ -355,7 +372,7 @@ Marcas: **aprendizado** = fases 0–8; **séria/trabalho** = só no fim; **fora*
 
 ---
 
-## Setup sugerido (Fase 0)
+## Setup sugerido (scaffold / Chat / Fase 0)
 
 ```bash
 cd "~/Documentos/py/OrchestraLang AI"
@@ -381,7 +398,7 @@ Modelo local: priorizar **tool calling** estável; se falhar, testar o mesmo age
 
 ## Processo de cada etapa
 
-Vale **para toda fase daqui pra frente** (Fase 0, 1, 2, …). Uma etapa só fecha quando os três passos existem.
+Vale **para toda fase daqui pra frente** (Fase Chat, 0, 1, 2, …). Uma etapa só fecha quando os três passos existem. Regra de no-commit de estudo local permanece em `CLAUDE.md` / `.gitignore` (`docs/estudo/`).
 
 ### 1. Código
 
@@ -412,17 +429,19 @@ Vale **para toda fase daqui pra frente** (Fase 0, 1, 2, …). Uma etapa só fech
 
 Se a sessão virar “refatorar arquitetura genérica”, parar — voltar ao critério de pronto da fase.
 
-### Código precoce (Fase 0/1 vazada)
+### Código precoce (já no working tree)
 
-Já existe no repo um scaffold (`src/orchestralang/`: config, catálogo OpenRouter, factory LLM, CLI `ping` / `models-openrouter`) **sem** `create_agent` e **sem** agente ADB.  
-**Fica.** Não apagar, não expandir “porque já começou”.  
-Próximo trabalho consciente de código **só quando Tao pedir** a etapa. Até lá: só roadmap / estudo.
+Já existe: scaffold (`config` / `models` / `llm`) **e** Fase Chat (`uv run orchestralang`). O hello foi removido.  
+**Fica o chat.** Não expandir ADB / features loucas.  
+Streaming do chat ainda não.  
+Próximo trabalho consciente de código **só quando Tao pedir**.
 
 ---
 
 ## Definição de sucesso (aprendizado)
 
-- Você explica `create_agent` + tools sem ler doc.
+- Você conversa multi-turn trocando modelo (Ollama / OpenRouter / Grok) sem releitura de doc.
+- Você explica `create_agent` + tools sem ler doc (depois do chat).
 - Agente ADB faz ≥3 tarefas reais no device.
 - Inbox de ideias está em uso.
 - Repo pequeno, testável, sem pasta `agents/` fantasma.
@@ -432,6 +451,6 @@ Próximo trabalho consciente de código **só quando Tao pedir** a etapa. Até l
 
 ## Próximo passo concreto
 
-1. Etapa precoce (quando Tao pedir): subir Ollama → `ollama list` → `ollama pull` nos keepers → smoke `ollama run` → `rm` **só** extras quebrados (nunca os 6 protegidos) → pulls novos só se faltar + refrescar lista OpenRouter free.  
-2. Scaffold mínimo de modelos/CLI **já está no repo** — ver `docs/src/`. Não recriar do zero.  
-3. Próximo código consciente: só após pedido explícito — ex. `specs/adb-android.md` e/ou Fase 0 hello (`create_agent` + 1 tool) seguindo o **Processo de cada etapa** acima.
+1. **Fase Chat feita** — `uv run orchestralang`. Streaming fica para quando Tao pedir.  
+2. Scaffold, Ollama, `ping` e `models-openrouter` já feitos. Hello saiu.  
+3. **Não agora:** ADB (Fase 1), inbox, vision, telecinese, app, Ambev/Mercantil.
