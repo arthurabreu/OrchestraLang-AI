@@ -1,0 +1,31 @@
+# Secrets / env — never in git (no exception for .env.example)
+.env
+.env.*
+
+# Python / uv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+uv.lock
+
+# IDE / Cursor / OS (local only — not upstream)
+.cursor/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Study notes (entire tree local / ephemeral)
+docs/estudo/
