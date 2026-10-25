@@ -11,13 +11,15 @@ Estudo de LangChain 1.x construindo agentes úteis. **Não** monólito tipo repo
 
 ## Estado — leia antes de editar
 
-Scaffold só (`config`, `models`, `llm`, CLI `ping` / `models-openrouter`). Sem agentes, tools, tests ainda.
+**Fase Chat** no ar: `uv run orchestralang` — local / xAI / OpenRouter, multi-turn. Sem key falha claro. Notas: `docs/src/orchestralang/chat.md`.  
+O hello (`get_time` / `run hello`) foi removido.  
+Também: `config` / `models` / `llm` + CLI `ping` / `models-ollama` / `models-openrouter`. Konsole: `scripts/dev/` (notas em `docs/scripts/dev.md`).
 
 - Estudo por arquivo: `docs/src/` (espelho de cada `.py` sob `src/` — **tracked**)
 - Roadmap + checklist: `docs/roadmap/learning-roadmap.md`
 - Estudo por etapa: `docs/estudo/` — **árvore inteira local**, gitignored (inclui `README.md`)
 
-**Não implementar a próxima fase até pedido explícito.**
+**Não implementar a próxima fase até pedido explícito** (ex.: Fase 1 ADB).
 
 ## Code study docs (`docs/src/`)
 
@@ -28,18 +30,19 @@ Ao criar/mudar um `.py` em `src/`, atualizar/criar o `.md` na **mesma** mudança
 
 Se pedirem pra atualizar `CLAUDE.md`, atualizar **também** este `AGENTS.md` e `.cursor/rules/orchestralang.mdc` com a mesma política/convenção. Nunca divergir os três.
 
-## Git — commits (Conventional Commits)
+## Git — commits / push / PR (só com pedido explícito)
 
-Formato: `tipo: frase curta descrevendo a mudança` (PT ou EN; preferir frase curta em português).
+**Nunca** `git commit`, `git push` ou `gh pr create` sem Tao pedir explicitamente.  
+Implementar e deixar working tree sujo (ou só staged se ajudar revisão). Tao revisa antes; commit/push/PR só com ok dele.
 
-Tipos: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`, `style`, `perf`, `ci`
-
+Quando Tao pedir commit: Conventional Commits — `tipo: frase curta` (PT/EN; preferir PT curto).  
+Tipos: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`, `style`, `perf`, `ci`  
 Exemplos: `feat: add hello agent with create_agent` · `docs: mirror llm.py study notes`
 
 ## Git — branches
 
 - `feat|fix|docs|chore|refactor|test/nome-curto-kebab`
-- Branch a partir de `main`; PR quando houver remote
+- Branch a partir de `main` (local ok pra isolar); **push / PR só se Tao pedir**
 - Sem nomes aleatórios; após bootstrap, sem commit de feature direto em `main`
 
 ## Arquitetura (SOLID + Clean — pragmático)
@@ -66,6 +69,10 @@ Exemplos: `feat: add hello agent with create_agent` · `docs: mirror llm.py stud
 
 ```bash
 uv sync
+uv run pytest
+uv run orchestralang                   # chat: 1 local / 2 xAI / 3 OpenRouter
+uv run python scripts/dev/start.py    # Konsole: chat + ollama
+uv run orchestralang models-ollama
 uv run orchestralang models-openrouter
 uv run orchestralang ping                 # OLLAMA_MODEL
 uv run orchestralang ping "open router: openrouter/free"

@@ -1,15 +1,18 @@
 # `config.py`
 
+Lê ambiente. Importar o módulo já carrega o `.env`.
+
 ## Marcado
 
-- **classe**&nbsp;:&nbsp;&nbsp;nenhuma. <span style="color:#6a9955">Só getters de env.</span>
-- **L12–13 `load_dotenv` (no import)**&nbsp;:&nbsp;&nbsp;carrega .env do cwd e da raiz do repo (parents[2]). <span style="color:#6a9955">Roda ao importar — uv run de qualquer pasta do repo acha o .env.</span>
-- **`ollama_model()`**&nbsp;:&nbsp;&nbsp;lê OLLAMA_MODEL; default qwen3:8b. <span style="color:#6a9955">Strip vazio vira default.</span>
-- **`openrouter_api_key()`**&nbsp;:&nbsp;&nbsp;OPENROUTER_API_KEY → str ou None. <span style="color:#6a9955">None = sem key (não string vazia).</span>
-- **`openrouter_default_model()`**&nbsp;:&nbsp;&nbsp;OPENROUTER_MODEL → display open router: …. <span style="color:#6a9955">Default open router: openrouter/free.</span>
-- **`xai_api_key()`**&nbsp;:&nbsp;&nbsp;XAI_API_KEY → str ou None. <span style="color:#6a9955">Mesmo padrão das outras keys.</span>
-- **padrão keys**&nbsp;:&nbsp;&nbsp;vazio vira None. <span style="color:#6a9955">llm.py transforma em RuntimeError legível.</span>
+- **classe**&nbsp;:&nbsp;&nbsp;nenhuma. <span style="color:#6a9955">Só getters.</span>
+- **`load_dotenv` no import**&nbsp;:&nbsp;&nbsp;cwd, depois a raiz do repo (`parents[2]` a partir deste arquivo). <span style="color:#6a9955">`uv run` acha o `.env` do projeto.</span>
+- **`ollama_model()`**&nbsp;:&nbsp;&nbsp;`OLLAMA_MODEL`, senão `qwen3:8b`. <span style="color:#6a9955">Usado quando `get_chat_model(None)` — o ping sem argumento. O chat local manda a tag escolhida.</span>
+- **`ollama_base_url()`**&nbsp;:&nbsp;&nbsp;`OLLAMA_HOST`, senão `http://127.0.0.1:11434`, sem barra final. <span style="color:#6a9955">`list_ollama_local` chama `{url}/api/tags`.</span>
+- **`llm_temperature()`**&nbsp;:&nbsp;&nbsp;`LLM_TEMPERATURE`, senão `0.2`. Texto inválido também vira 0.2. <span style="color:#6a9955">Chat e ping usam este número. Mudou o `.env` → abre o app de novo.</span>
+- **`openrouter_api_key()`**&nbsp;:&nbsp;&nbsp;string ou None. <span style="color:#6a9955">Vazio = None. O chat opção 3 checa antes de listar.</span>
+- **`openrouter_default_model()`**&nbsp;:&nbsp;&nbsp;`OPENROUTER_MODEL` ou `open router: openrouter/free`. <span style="color:#6a9955">Não é o que o menu mostra; o menu lista o catálogo inteiro.</span>
+- **`xai_api_key()`**&nbsp;:&nbsp;&nbsp;`XAI_API_KEY` ou None. <span style="color:#6a9955">Chat opção 2.</span>
 
 ## Resumo
 
-Lê .env e devolve modelo/keys. Config fora do código; não valida se Ollama tem o modelo.
+Modelo default, URL do Ollama, temperatura e as duas keys. Sem key não é string vazia — é None, e quem chama decide a mensagem.

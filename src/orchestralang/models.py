@@ -35,6 +35,13 @@ OPENROUTER_FREE: dict[str, str] = {
     f"{OPENROUTER_PREFIX}{mid}": mid for mid in OPENROUTER_FREE_IDS
 }
 
+XAI_MODELS: tuple[str, ...] = (
+    "grok-4",
+    "grok-3",
+    "grok-3-mini",
+    "grok-2-latest",
+)
+
 OLLAMA_MODELS_LOCAL: tuple[str, ...] = (
     "nomic-embed-text:latest",
     "gemma3:4b",

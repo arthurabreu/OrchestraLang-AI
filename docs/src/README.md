@@ -4,9 +4,14 @@ Cada arquivo `.py` sob `src/` tem um gêmeo `.md` aqui, **mesmo caminho e nome**
 
 | Fonte | Estudo |
 | --- | --- |
-| `src/orchestralang/llm.py` | `docs/src/orchestralang/llm.md` |
+| `src/orchestralang/chat.py` | `docs/src/orchestralang/chat.md` |
 | `src/orchestralang/cli.py` | `docs/src/orchestralang/cli.md` |
+| `src/orchestralang/llm.py` | `docs/src/orchestralang/llm.md` |
+| `src/orchestralang/models.py` | `docs/src/orchestralang/models.md` |
+| `src/orchestralang/config.py` | `docs/src/orchestralang/config.md` |
 | … | … |
+
+Launcher Konsole (não é `src/`): [`docs/scripts/dev.md`](../scripts/dev.md) ↔ `scripts/dev/`.
 
 ## Por quê
 

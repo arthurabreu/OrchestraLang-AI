@@ -13,14 +13,15 @@ Dono: Tao. Pasta: `~/Documentos/py/OrchestraLang AI`.
 
 ## Estado atual (importante)
 
-Scaffold precoce só: `config` + catálogo `models` + factory `llm` + CLI `ping` / `models-openrouter`.  
-**Ainda não há** `create_agent`, tools, `agents/`, `tests/`, `specs/`.
+Há **Fase Chat**: `uv run orchestralang` — 1 Ollama / 2 xAI / 3 OpenRouter, multi-turn (`/back`, `/exit`). Sem key, xAI e OpenRouter falham claro.  
+O hello (`get_time` / `run hello`) foi removido.  
+Também: `config` / `models` / `llm` + CLI `ping` / `models-ollama` / `models-openrouter`. Launcher: `scripts/dev/` (`uv run python scripts/dev/start.py`).
 
 - Estudo por arquivo (espelho de `src/`): `docs/src/` (**versionado**)
 - Roadmap + checklist: `docs/roadmap/learning-roadmap.md`
 - Notas por etapa: `docs/estudo/` — **árvore inteira local**, gitignored (inclui `README.md`)
 
-**Não escreva a próxima fase de código até Tao pedir** (ex.: Fase 0 hello agent).
+**Não escreva a próxima fase de código até Tao pedir** (ex.: Fase 1 ADB).
 
 ## Code study docs (`docs/src/`)
 
@@ -34,9 +35,12 @@ Todo arquivo sob `src/` tem gêmeo sob `docs/src/` com o **mesmo caminho/nome** 
 
 Sempre que Tao (ou um agente) pedir pra **atualizar o CLAUDE.md**, atualizar **também** `AGENTS.md` e `.cursor/rules/orchestralang.mdc` com as **mesmas** mudanças de convenção/política. Os três ficam alinhados — nunca só um.
 
-## Git — commits (Conventional Commits)
+## Git — commits / push / PR (só com pedido explícito)
 
-Formato: `tipo: frase curta descrevendo a mudança` (PT ou EN; preferir frase curta em português).
+**Nunca** `git commit`, `git push` ou `gh pr create` (nem equivalente) **sem Tao pedir explicitamente**.  
+Agente implementa e deixa working tree sujo (ou só staged se ajudar a revisão). Tao revisa o código primeiro; commit/push/PR só depois do ok dele.
+
+Quando Tao pedir commit: Conventional Commits — `tipo: frase curta` (PT ou EN; preferir frase curta em português).
 
 Tipos: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`, `style`, `perf`, `ci`
 
@@ -54,7 +58,7 @@ Exemplos:
 - `refactor/nome-curto-kebab`
 - `test/nome-curto-kebab`
 
-Preferir branch a partir de `main`; abrir PR quando existir remote.  
+Preferir branch a partir de `main`. Branch local ok pra isolar trabalho; **push / PR só se Tao pedir**.  
 Sem nomes aleatórios. Depois do bootstrap, **não** commit direto em `main` pra features (bootstrap/primeiro commit pode ir em `main`).
 
 ## Arquitetura (SOLID + Clean — pragmático)
@@ -105,7 +109,7 @@ specs/               # contrato do agente (versionado quando existir)
 - Factory de modelo: `get_chat_model(name)` em `llm.py`.
 - OpenRouter free: nomes `open router: <provider/model:free>`; IDs em `models.OPENROUTER_FREE_IDS`.
 - Arquivos de env (`.env`, `.env.*`, inclusive `.env.example`) **nunca** no git. Keys só no `.env` local.
-- Comandos: `uv sync`, `uv run orchestralang ping`, `uv run orchestralang models-openrouter`.
+- Comandos: `uv sync`, `uv run pytest`, `uv run orchestralang` (chat), `uv run python scripts/dev/start.py` (Konsole), `uv run orchestralang ping`, `uv run orchestralang models-ollama`, `uv run orchestralang models-openrouter`.
 
 ## Processo por etapa
 
