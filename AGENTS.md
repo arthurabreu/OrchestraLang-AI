@@ -1,85 +1,48 @@
-# OrchestraLang AI — instruções para agentes (Cursor e outros)
+# OrchestraLang AI
 
-Mesmo contexto que `CLAUDE.md`. Cursor e modelos do workspace leem este arquivo como orientação de projeto.
+Estudo LangChain 1.x: agentes úteis, anti-monólito. Python/`uv`, Ollama default, OpenRouter free (`open router: …`) e Grok/xAI opcional.
 
-## O que é
+## LangChain docs (Context7) — obrigatório
 
-Estudo de LangChain 1.x construindo agentes úteis. **Não** monólito tipo repos antigos (`orchestra-ai-agno`, `fsociety`, …).
+Sempre que precisar de info sobre LangChain (API, sintaxe, agentes, tools, models, migração, exemplos) — **mesmo se achar que sabe** — consultar Context7. Treino pode estar desatualizado (LangChain 1.x muda rápido).
 
-- Stack: Python ≥3.11, `uv`, LangChain ≥1.0, **Ollama local default**, OpenRouter free / Grok(xAI) pra comparação
-- Pacote: `src/orchestralang/` · CLI: `uv run orchestralang …`
+- **Library ID:** `/websites/langchain`
+- **Fonte:** https://context7.com/websites/langchain/llms.txt?tokens=10000
+- **Fluxo:** `query-docs` com `libraryId=/websites/langchain`, `language=Python`, query focada em **um** conceito. Preferir Context7 a web search para docs LangChain.
+- Não chamar `resolve-library-id` se o ID acima já for o alvo; usar direto.
 
-## Estado — leia antes de editar
+## Hard limits
 
-**Fase Chat** no ar: `uv run orchestralang` — local / xAI / OpenRouter, multi-turn. Sem key falha claro. Notas: `docs/src/orchestralang/chat.md`.  
-O hello (`get_time` / `run hello`) foi removido.  
-Também: `config` / `models` / `llm` + CLI `ping` / `models-ollama` / `models-openrouter`. Konsole: `scripts/dev/` (notas em `docs/scripts/dev.md`).
+- Estado: Fase Chat (`uv run orchestralang` — Ollama / xAI / OpenRouter). Hello removido. **Não expandir** (Fase 1+) sem Tao pedir.
+- Não portar código dos repos antigos vibe-coded; ideias ok.
+- Spec curta antes de agente novo; tools testáveis sem LLM; um agente = um job.
+- Arquivos de env (`.env`, `.env.*`, inclusive `.env.example`) **nunca** no git. Nunca `ollama rm` nos keepers (`OLLAMA_KEEPERS`).
 
-- Estudo por arquivo: `docs/src/` (espelho de cada `.py` sob `src/` — **tracked**)
-- Roadmap + checklist: `docs/roadmap/learning-roadmap.md`
-- Estudo por etapa: `docs/estudo/` — **árvore inteira local**, gitignored (inclui `README.md`)
+## Git
 
-**Não implementar a próxima fase até pedido explícito** (ex.: Fase 1 ADB).
+- **Nunca** `git commit` / `git push` / `gh pr create` sem Tao pedir explicitamente. Implementar → working tree sujo (ou só staged); Tao revisa primeiro.
+- Quando Tao pedir commit: `tipo: frase curta` (Conventional Commits; PT/EN; preferir PT curto). Tipos: `feat` `fix` `docs` `chore` `test` `refactor` `style` `perf` `ci`.
+- Branches: `feat|fix|docs|chore|refactor|test/nome-curto-kebab` off `main` (local ok). **Push / PR só se Tao pedir.** Sem commit de feature em `main` após bootstrap.
+
+## Arquitetura (pragmática)
+
+Abstrações nas bordas (`llm` factory, tools); CLI fino; domínio separado do wiring LangChain; módulos pequenos — sem god-classes / mega-arquivos.
 
 ## Code study docs (`docs/src/`)
 
-Cada arquivo em `src/` tem gêmeo em `docs/src/` com mesmo path/nome e extensão `.md`.  
-Ao criar/mudar um `.py` em `src/`, atualizar/criar o `.md` na **mesma** mudança. Ver `docs/src/README.md`.
-
-## Sync trio (CLAUDE ↔ AGENTS ↔ Cursor `.mdc`)
-
-Se pedirem pra atualizar `CLAUDE.md`, atualizar **também** este `AGENTS.md` e `.cursor/rules/orchestralang.mdc` com a mesma política/convenção. Nunca divergir os três.
-
-## Git — commits / push / PR (só com pedido explícito)
-
-**Nunca** `git commit`, `git push` ou `gh pr create` sem Tao pedir explicitamente.  
-Implementar e deixar working tree sujo (ou só staged se ajudar revisão). Tao revisa antes; commit/push/PR só com ok dele.
-
-Quando Tao pedir commit: Conventional Commits — `tipo: frase curta` (PT/EN; preferir PT curto).  
-Tipos: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`, `style`, `perf`, `ci`  
-Exemplos: `feat: add hello agent with create_agent` · `docs: mirror llm.py study notes`
-
-## Git — branches
-
-- `feat|fix|docs|chore|refactor|test/nome-curto-kebab`
-- Branch a partir de `main` (local ok pra isolar); **push / PR só se Tao pedir**
-- Sem nomes aleatórios; após bootstrap, sem commit de feature direto em `main`
-
-## Arquitetura (SOLID + Clean — pragmático)
-
-- Um agente = um job; tools testáveis sem LLM
-- Abstrações nas bordas (`llm` factory, tools) — não hardcodar provider no agente
-- CLI fino; domínio/tools separados do wiring LangChain
-- Módulos pequenos; estender com tools/agentes novos, não mega-arquivos
-- Leve — sem cerimônia enterprise
+Todo `.py` sob `src/` tem gêmeo `.md` sob `docs/src/` (mesmo path/nome) — **tracked**. Ao mudar código em `src/`, atualizar o espelho na mesma mudança. Índice: `docs/src/README.md`.
 
 ## Study notes `docs/estudo/`
 
-Árvore `docs/estudo/` inteira local/gitignored (inclui `README.md`). Permanente: `docs/src/**` (tracked). Specs: `specs/` (tracked quando existirem). Env (`.env`, `.env.*`, inclusive `.env.example`) nunca no git. `uv.lock` e `.cursor/` locais.
+Árvore `docs/estudo/` inteira **local/gitignored** (inclui `README.md`). Permanente: `docs/src/**` (tracked). Specs em `specs/` (tracked quando existirem). `uv.lock` e `.cursor/` locais — não versionar.
 
-## Regras de ouro
+## Sync trio (CLAUDE ↔ AGENTS ↔ `.cursor/rules/orchestralang.mdc`)
 
-- Um agente = um job; tool first; spec antes de código
-- Vertical slice utilizável; local por padrão
-- Não portar código morto dos monólitos antigos
-- Secrets em `.env` apenas; keepers Ollama nunca `rm` (lista em `models.OLLAMA_KEEPERS` / roadmap)
-- Prefixo OpenRouter: `open router: <id>`
+Pedido pra “atualizar o CLAUDE.md” ⇒ atualizar **também** `AGENTS.md` e `orchestralang.mdc` com as mesmas regras. Manter os três sincronizados.
 
-## Comandos úteis
+## Orientação
 
-```bash
-uv sync
-uv run pytest
-uv run orchestralang                   # chat: 1 local / 2 xAI / 3 OpenRouter
-uv run python scripts/dev/start.py    # Konsole: chat + ollama
-uv run orchestralang models-ollama
-uv run orchestralang models-openrouter
-uv run orchestralang ping                 # OLLAMA_MODEL
-uv run orchestralang ping "open router: openrouter/free"
-```
-
-## Processo
-
-código (+ pytest tools sem LLM) → teste manual → MD **local** `docs/estudo/fase-N-….md` (não commit) (+ espelho `docs/src/` se tocou `.py`)
-
-Detalhe completo: `CLAUDE.md` e `docs/roadmap/learning-roadmap.md`.
+- Roadmap + checklist: `docs/roadmap/learning-roadmap.md`
+- Instruções longas: `AGENTS.md` / `CLAUDE.md`
+- Docs de fase: `docs/estudo/` local depois de código + teste manual (não versionar)
+- Responder em português
