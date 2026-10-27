@@ -75,3 +75,28 @@ for item in agent.stream(inp, stream_mode="messages"):
         print(f"\n  [tool_call_chunk] {tcc}", flush=True)
 print()  # newline após o stream
 print("ok: messages = pedaços; updates = passos do agent")
+
+# RESULTADO:
+# assert ok: soma(2,3)=5
+
+# === stream_mode='updates' (nós do grafo) ===
+# pergunta: Quanto é 17 + 25? Use a ferramenta soma. Responda com o número.
+
+# --- passo 1: nó='model' ---
+#   AIMessage content=''
+#   tool_calls: [{'name': 'soma', 'args': {'a': 17, 'b': 25}, 'id': '5601dfb0-aa36-4823-972e-287eccadf784', 'type': 'tool_call'}]
+
+# --- passo 2: nó='tools' ---
+#   ToolMessage content='42'
+
+# --- passo 3: nó='model' ---
+#   AIMessage content='42'
+
+# ok: updates mostrou tool no meio do caminho (não só no fim)
+
+# === stream_mode='messages' (chunks de texto) ===
+# pergunta: Quanto é 17 + 25? Use a ferramenta soma. Responda com o número.
+# final ao vivo: 
+#   [tool_call_chunk] [{'name': 'soma', 'args': '{"a": 17, "b": 25}', 'id': '3639aa09-bd0f-456c-b46d-b8d40ea026cd', 'index': None, 'type': 'tool_call_chunk'}]
+# 4242
+# ok: messages = pedaços; updates = passos do agent
