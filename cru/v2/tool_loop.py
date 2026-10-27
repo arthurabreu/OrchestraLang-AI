@@ -2,6 +2,11 @@
 # Fluxo: Human → AI(tool_calls) → ToolMessage(resultado) → AI(texto final)
 # NÃO usar create_agent aqui — loop manual de propósito.
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_ollama import ChatOllama

@@ -2,6 +2,11 @@
 # Retorno típico = instância Resumo(...), não str.
 # Ollama: se der erro / None, tenta method="json_schema" ou outro Model (ex. QWEN3_8B).
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from pydantic import BaseModel, Field
 from langchain_ollama import ChatOllama
 

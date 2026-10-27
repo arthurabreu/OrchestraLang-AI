@@ -12,6 +12,11 @@
 # (codinome inventado, cálculo, escolha). Se o fato já está no Human, ele
 # continua na lista mesmo sem AI — por isso o teste da “cor” ainda acertava.
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 
