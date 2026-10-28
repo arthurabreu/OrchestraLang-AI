@@ -164,40 +164,40 @@ if ok:
     print("ok: context_schema mudou o user_id entre invokes; tool leu o crachá.")
 
 # RESULTADO:
-assert ok: banco fake alice=10 bob=999
+# assert ok: banco fake alice=10 bob=999
 # nota: consultar_saldo só funciona com runtime injetado pelo agent;
 #       invoke manual da tool sem ToolRuntime não é o caminho deste lab.
-
+#
 # === O QUE OLHAR ===
 # 1) HumanMessage é IDÊNTICO nas duas corridas.
 # 2) Diferença só no context (print [request]).
 # 3) ToolMessage deve vir do banco fake (alice→10, bob→999), não do LLM.
 # 4) Sem ToolMessage = modelo inventou = FAIL didático (troca Model/prompt).
-
+#
 # --- corrida Alice (context user_id=u-alice) ---
 #   [request] messages=só a pergunta | context.user_id='u-alice'
 #   [0] HumanMessage
 #       content: Qual é o meu saldo? Use a ferramenta. Não invente.
 #   [1] AIMessage
-#       content: 
+#       content:
 #       tool_calls: [{'name': 'consultar_saldo', 'args': {}, 'id': '2c7cb2e0-8ce2-4904-91f8-6c1999797700', 'type': 'tool_call'}]
 #   [2] ToolMessage
 #       content: user_id=u-alice saldo=10
 #   [3] AIMessage
 #       content: O seu saldo é 10.
-
+#
 # --- corrida Bob (context user_id=u-bob) ---
 #   [request] messages=só a pergunta | context.user_id='u-bob'
 #   [0] HumanMessage
 #       content: Qual é o meu saldo? Use a ferramenta. Não invente.
 #   [1] AIMessage
-#       content: 
+#       content:
 #       tool_calls: [{'name': 'consultar_saldo', 'args': {}, 'id': '9eeb32b9-164c-4010-9b59-668c4b458d1c', 'type': 'tool_call'}]
 #   [2] ToolMessage
 #       content: user_id=u-bob saldo=999
 #   [3] AIMessage
 #       content: Seu saldo é 999.
-
+#
 # === LEITURA ===
 # Alice ToolMessage: user_id=u-alice saldo=10
 # Bob   ToolMessage: user_id=u-bob saldo=999
