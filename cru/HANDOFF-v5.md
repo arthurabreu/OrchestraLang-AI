@@ -17,7 +17,8 @@ Objetivo do estudo (não é mais “conhecer param”): Tao quer **montar agente
 
 ## Como estudamos (estilo obrigatório)
 
-1. **Brinquedo em `cru/`**, não produção. Scripts pequenos, rodam sozinhos.
+0. **Útil acima de tudo.** Cada passo deste handoff e de todo `HANDOFF-vN` novo simula um problema que aparece ao montar um agent de verdade. Tao tem que conseguir copiar o padrão na próxima tool que escrever. Lab pequeno ok. Problema fictício não. Proibido mascote (`bomba` da v4: veto de uma tool que não existiria em produção). Teste antes de codar: "eu usaria isso num agent real?" Se a resposta for não, reescrever a lição. Referência boa: `cru/v5/mw_caso_real.py` — input ruim, tool estoura, middleware traduz, processo segue.
+1. **Brinquedo em `cru/`**, não produção. Scripts pequenos, rodam sozinhos. O cenário é real; o script é curto.
 2. **Um arquivo novo por lição.** Layout:
    - `cru/models.py` — shared (`Model` StrEnum)
    - `cru/v1/` … `cru/v4/` — fechados
@@ -36,7 +37,7 @@ from models import Model
 6. Print didático da trilha (`messages`, interrupt, store).
 7. **`# RESULTADO:`** no fim — Tao cola o output. Você **não** inventa. Cada linha do bloco colado tem que ser comentário `#`, senão o `.py` não compila (já quebrou em v4).
 8. Modelo default: Ollama `ChatOllama` + `Model.QWEN3_8B`, `temperature=0`, `reasoning=False`. Tool call falhou → FAIL didático (troca Model / reforça prompt), não panic.
-9. **Planejar → implementar só quando pedir → ele testa → msg de commit sob pedido → próximo.** Não rodar LLM por ele; o comando `uv run python …` basta.
+9. **Planejar → implementar só quando pedir → ele testa → msg de commit sob pedido → próximo.** Não rodar LLM por ele; o comando `uv run python …` basta. No fim de cada resposta, se o working tree estiver sujo (staged ou unstaged), entregar a msg de commit (`test: vN …`). Não commitar até pedir.
 10. Se a lição diz “humano decide”, o script **espera** (`input`) ou o comentário deixa explícito que o código é o humano. Em v4 o HITL mandou `approve` sozinho e Tao achou que não tinha aprovado nada.
 
 ## O que já foi aprendido (não repetir como novidade)
@@ -89,11 +90,11 @@ Mapa mental que Tao já tem — não reexplicar do zero:
 
 Parar de turistar parâmetro de `create_agent`. v4 deixou `state_schema`, `debug`, `name`, `cache`, `transformers` de lado **de propósito**: servem pouco pra montar um sistema agora.
 
-v5 = o que um script real precisa para não morrer:
+v5 = três problemas que aparecem ao montar um agent de verdade:
 
-1. Tool que **quebra** e o agent continua (erro vira `ToolMessage`, o modelo lê).
-2. Fio longo: o checkpointer guarda tudo, o modelo só vê uma **janela** (`trim_messages`).
-3. Um mini-sistema que **junta** peças já sabidas — não uma API nova.
+1. Tool que **quebra** (input ruim) e o agent continua. Feito: `mw_caso_real.py`.
+2. Atendimento longo: o ticket fica guardado, o modelo só relê o fim.
+3. Um caixa pequeno que junta crachá + fio + saldo que pode falhar.
 
 ### Plano v5 (prioridade)
 
@@ -103,15 +104,15 @@ v5 = o que um script real precisa para não morrer:
    Contraste: o veto da v4 recusa de propósito; aqui a tool falhou e o middleware traduz.  
    API (Context7, doc tools): `handle_tool_errors` + `create_agent(..., middleware=[...])`.
 
-2. **Janela de mensagens** — `cru/v5/trim_messages.py`  
-   Checkpointer acumula o fio. `trim_messages` (strategy `last`, `count_tokens_approximately` ou contagem simples) manda ao modelo só o fim.  
-   **Armadilha:** devolver `{"messages": recorte}` num `before_model` pode **apagar** o histórico do state, não só a vista do modelo. Antes de codar, Context7 numa query só: como cortar o que o modelo vê **sem** destruir o baú do checkpointer. Print: baú cheio vs o que entrou no model.  
-   Critério: fio com várias msgs; modelo não recebe o começo; `get_tuple` ainda tem o começo.
+2. **Fio longo sem amnésia** — `cru/v5/trim_messages.py`  
+   Problema real: agent de chat com tools. Cada chamada vira várias mensagens. O atendimento precisa ficar guardado (retomar, auditar, "o que pedi no começo"). O modelo não pode reler o fio inteiro toda vez: estoura janela, fica lento, responde com lixo antigo.  
+   O que se copia: checkpointer guarda o ticket completo. `trim_messages` (strategy `last`, teto de tokens ou contagem simples) manda ao modelo só o fim.  
+   **Armadilha que quebra o agent de verdade:** devolver `{"messages": recorte}` num `before_model` pode **apagar** o ticket no state, não só a vista desta chamada. Antes de codar, Context7 numa query só: cortar o que o modelo vê **sem** destruir o baú. Print: baú cheio vs o que entrou no model.  
+   Critério: o fato velho fica só no `get_tuple`. A resposta copia o fato novo, que está na janela. Pergunta cujo fato não está em mensagem nenhuma não serve: o modelo inventa e o lab parece quebrado.
 
-3. **Mini-sistema, zero conceito novo** — `cru/v5/caixa.py`  
-   Um caixa pequeno que usa só o que já existe: `context` (user_id) + checkpointer (o fio lembra o último pedido) + uma tool de saldo (banco fake, assert sem LLM) + o middleware de erro do item 1.  
-   Sem store e sem HITL neste arquivo, senão vira o lab que ninguém lê. Duas corridas no mesmo `thread_id`, users diferentes em threads diferentes.  
-   Objetivo pedagógico: Tao vê um script com um job, não um param isolado.
+3. **Um atendimento, não um param** — `cru/v5/caixa.py`  
+   Caixa de loja, job único: quem é o cliente (`context` / user_id), o que ele já pediu neste atendimento (checkpointer no mesmo `thread_id`), saldo que pode falhar (middleware do item 1 — conta inexistente vira `ToolMessage`, não crash). Outro cliente = outro `thread_id`. Tool de saldo com assert sem LLM.  
+   Sem store e sem HITL neste arquivo. Zero API nova. Tao sai com um script que já é um agent pequeno, não um tour de parâmetro.
 
 ### Se sobrar fôlego (não começar por aqui)
 
@@ -133,11 +134,8 @@ v5 = o que um script real precisa para não morrer:
 3. Ok / FAIL didático.
 4. Commit msg só quando pedir (`test: v5 …`).
 
-## Primeira ação nesta sessão
+## Onde estamos
 
-1. Criar/checkout `tests/v5` off `tests/v4` (local).
-2. Context7: **uma** query — `wrap_tool_call` convertendo exceção em `ToolMessage`.
-3. Implementar **só** `cru/v5/mw_caso_real.py` se Tao disser “go” / “faz v5”.
-4. Parar. Ele testa e cola `# RESULTADO:`.
-
-Não editar código até ele pedir. Se a mensagem já for “go”, começar pelo item 1 acima.
+1. Feito: `cru/v5/mw_caso_real.py`. Tao colou `# RESULTADO:`. Exit 0. Sem commit ainda.
+2. Escrito: `cru/v5/trim_messages.py`. Context7 feito (`wrap_model_call` + `request.override`, corte transitório). Tao ainda não colou `# RESULTADO:`.
+3. Próximo só quando pedir: lição 3 (`caixa.py`). Não editar até lá.
